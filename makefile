@@ -4,10 +4,14 @@ OUT_DIR = ./build
 
 OBJ_DIR = $(OUT_DIR)/obj
 BIN_DIR = $(OUT_DIR)/bin
+DOC_DIR = $(OUT_DIR)/doc
 
 SRC_FILES = $(wildcard $(SRC_DIR)/*.c) 
 OBJ_FILES = $(patsubst $(SRC_DIR)%.c, $(OBJ_DIR)%.o, $(SRC_FILES)) 
+DOXYFILE = Doxyfile
 
+CC = gcc
+CFLAGS = -Wall -Wextra -Werror -std=c99 -pedantic
 
 -include $(OBJ_DIR)/*.d
 
@@ -19,11 +23,18 @@ all: $(OBJ_FILES)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c 
 	@echo "Compiling" $< to $@
 	@mkdir -p $(OBJ_DIR)
-	@gcc -o $@ -c $< -I $(INC_DIR) -MMD
+	$(CC) $(CFLAGS) -o $@ -c $< -I $(INC_DIR) -MMD
 
 clean: 
 	@rm -rf $(OUT_DIR)
 
 info: 
-	echo "OBJ_FILES = $(OBJ_FILES)"
+	@echo "OBJ_FILES = $(OBJ_FILES)"
 
+doc:
+	@echo "Generando documentacion"
+	@mkdir -p $(DOC_DIR)
+	@doxygen $(DOXYFILE)
+
+run: all
+	@$(BIN_DIR)/app.out

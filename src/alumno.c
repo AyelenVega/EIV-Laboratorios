@@ -59,7 +59,7 @@ static int SerializarNumero(const char campo[], uint32_t valor, char buffer[], u
 /* === Private function definitions ================================================================================ */
 static int SerializarCadena(const char campo[], const char valor[], char buffer[], uint32_t disponible) {
     int resultado = snprintf(buffer, disponible, "\"%s\":\"%s\",", campo, valor);
-    if (resultado < 0 || resultado >= disponible) {
+    if (resultado < 0 || (uint32_t)resultado >= disponible) {
         return -1;
     }
     return resultado;
@@ -67,7 +67,7 @@ static int SerializarCadena(const char campo[], const char valor[], char buffer[
 
 static int SerializarNumero(const char campo[], uint32_t valor, char buffer[], uint32_t disponible) {
     int resultado = snprintf(buffer, disponible, "\"%s\":\"%u\",", campo, valor);
-    if (resultado < 0 || resultado >= disponible) {
+    if (resultado < 0 || (uint32_t)resultado >= disponible) {
         return -1;
     }
     return resultado;
@@ -97,7 +97,7 @@ int Serializar(alumno_t alumno, char buffer[], uint32_t size) {
     }
 
     escritos += resultado;
-    buffer +=  resultado;
+    buffer += resultado;
 
     resultado = SerializarNumero("documento", alumno->documento, buffer, size - escritos);
     if (resultado < 0) {

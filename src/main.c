@@ -45,7 +45,7 @@ static const struct alumno_s yo = {
 /* === Public function implementation ============================================================================== */
 
 int main(void) {
-    char buffer[100];
+    char buffer[65];
     int resultado;
     resultado = Serializar(&yo, buffer, sizeof(buffer));
 
