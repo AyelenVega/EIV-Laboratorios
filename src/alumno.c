@@ -23,13 +23,36 @@ SPDX-License-Identifier: MIT
 
 /* === Headers files inclusions ==================================================================================== */
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdbool.h>
 #include "alumno.h"
+#include "config.h"
 
 /* === Macros definitions ========================================================================================== */
-
+#ifndef MAX_ALUMNOS_INSTANCIAS
+#endif
 /* === Private data type declarations ============================================================================== */
 
+struct alumno_s {
+    char nombre[20];    //!< Nombre del alumno
+    char apellido[20];  //!< Apellido del alumno
+    uint32_t documento; //!< Documento del alumno
+#ifndef USO_MEMORIA_DINAMICA
+    bool ocupado;
+#endif
+};
+
 /* === Private function declarations =============================================================================== */
+/**
+ * @brief Reserva espacio de memoria para los alumnos
+ *
+ * @return alumno_t Referencia al alumno creado
+ */
+#ifndef USO_MEMORIA_DINAMICA
+static alumno_t CrearInstancia();
+#endif
+
 /**
  * @brief Serializa una cadena de caracteres
  *
@@ -39,7 +62,7 @@ SPDX-License-Identifier: MIT
  * @param disponibles Cantidad de espacios disponibles en la cadena
  * @return int Devuelve la cantidad de espacios que se usaron, o -1 si hubo un error
  */
-static int SerializarCadena(const char campo[], const char valor[], char buffer[], uint32_t disponible);
+static int SerializarCadena(char campo[], char valor[], char buffer[], uint32_t disponible);
 
 /**
  * @brief Serializa un número
@@ -50,14 +73,33 @@ static int SerializarCadena(const char campo[], const char valor[], char buffer[
  * @param disponible Cantidad de espacios disponibles en la cadena
  * @return int Devuelve la cantidad de espacios que se usaron, o -1 si hubo un error
  */
-static int SerializarNumero(const char campo[], uint32_t valor, char buffer[], uint32_t disponible);
+static int SerializarNumero(char campo[], uint32_t valor, char buffer[], uint32_t disponible);
 
 /* === Private variable definitions ================================================================================ */
+#ifndef USO_MEMORIA_DINAMICA
+static struct alumno_s instancias[ALUMNOS_MAX_INSTANCIAS] = {0};
+#endif
 
 /* === Public variable definitions ================================================================================= */
 
 /* === Private function definitions ================================================================================ */
-static int SerializarCadena(const char campo[], const char valor[], char buffer[], uint32_t disponible) {
+
+#ifndef USO_MEMORIA_DINAMICA
+static alumno_t CrearInstancia() {
+    alumno_t self = NULL;
+    int i;
+    for (i = 0; i < ALUMNOS_MAX_INSTANCIAS; i++) {
+        if (!instancias[i].ocupado) {
+            self = &instancias[i];
+            self->ocupado = true;
+            break;
+        }
+    }
+    return self;
+}
+#endif
+
+static int SerializarCadena(char campo[], char valor[], char buffer[], uint32_t disponible) {
     int resultado = snprintf(buffer, disponible, "\"%s\":\"%s\",", campo, valor);
     if (resultado < 0 || (uint32_t)resultado >= disponible) {
         return -1;
@@ -65,7 +107,7 @@ static int SerializarCadena(const char campo[], const char valor[], char buffer[
     return resultado;
 }
 
-static int SerializarNumero(const char campo[], uint32_t valor, char buffer[], uint32_t disponible) {
+static int SerializarNumero(char campo[], uint32_t valor, char buffer[], uint32_t disponible) {
     int resultado = snprintf(buffer, disponible, "\"%s\":\"%u\",", campo, valor);
     if (resultado < 0 || (uint32_t)resultado >= disponible) {
         return -1;
@@ -75,7 +117,23 @@ static int SerializarNumero(const char campo[], uint32_t valor, char buffer[], u
 
 /* === Public function implementation ============================================================================== */
 
-int Serializar(alumno_t alumno, char buffer[], uint32_t size) {
+alumno_t AlumnoCrear(char nombre[], char apellido[], uint32_t dni) {
+#ifdef USO_MEMORIA_DINAMICA
+    alumno_t self = malloc(sizeof(struct alumno_s));
+#else
+    alumno_t self = CrearInstancia();
+#endif
+    if (self != NULL) {
+        strncpy(self->nombre, nombre, sizeof(self->nombre) - 1);
+        strncpy(self->apellido, apellido, sizeof(self->apellido) - 1);
+        self->nombre[sizeof(self->nombre) - 1] = '\0';
+        self->apellido[sizeof(self->apellido) - 1] = '\0';
+        self->documento = dni;
+    }
+    return self;
+}
+
+int AlumnoSerializar(alumno_t self, char buffer[], uint32_t size) {
     int escritos; // Cantidad de caracteres que fueron escritos
     int resultado;
 
@@ -83,7 +141,7 @@ int Serializar(alumno_t alumno, char buffer[], uint32_t size) {
     buffer++;
     escritos = 1;
 
-    resultado = SerializarCadena("nombre", alumno->nombre, buffer, size - escritos);
+    resultado = SerializarCadena("nombre", self->nombre, buffer, size - escritos);
     if (resultado < 0) {
         return -1;
     }
@@ -91,7 +149,7 @@ int Serializar(alumno_t alumno, char buffer[], uint32_t size) {
     escritos += resultado;
     buffer += resultado;
 
-    resultado = SerializarCadena("apellido", alumno->apellido, buffer, size - escritos);
+    resultado = SerializarCadena("apellido", self->apellido, buffer, size - escritos);
     if (resultado < 0) {
         return -1;
     }
@@ -99,13 +157,13 @@ int Serializar(alumno_t alumno, char buffer[], uint32_t size) {
     escritos += resultado;
     buffer += resultado;
 
-    resultado = SerializarNumero("documento", alumno->documento, buffer, size - escritos);
+    resultado = SerializarNumero("documento", self->documento, buffer, size - escritos);
     if (resultado < 0) {
         return -1;
     }
 
     escritos += resultado;
-    buffer += resultado - 1; // Porque quiero pisar la ultima coma
+    buffer += resultado - 1; 
 
     buffer[0] = '}';
     buffer++;

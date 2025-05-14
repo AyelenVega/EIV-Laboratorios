@@ -8,22 +8,22 @@ DOC_DIR = $(OUT_DIR)/doc
 
 SRC_FILES = $(wildcard $(SRC_DIR)/*.c) 
 OBJ_FILES = $(patsubst $(SRC_DIR)%.c, $(OBJ_DIR)%.o, $(SRC_FILES)) 
-DOXYFILE = Doxyfile
 
 CC = gcc
-CFLAGS = -Wall -Wextra -Werror -std=c99 -pedantic
+CFLAGS = -Wall -Wextra -Werror -std=c99 -pedantic -m64
+LDFLAGS = -m64 -Wl,--subsystem,console 
 
 -include $(OBJ_DIR)/*.d
 
 all: $(OBJ_FILES) 
 	@echo "Linking object files to create the executable"
 	@mkdir -p $(BIN_DIR)
-	@gcc $(OBJ_FILES) -o $(BIN_DIR)/app.out
+	$(CC) $(LDFLAGS) $(OBJ_FILES) -o $(BIN_DIR)/app.out
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c 
 	@echo "Compiling" $< to $@
 	@mkdir -p $(OBJ_DIR)
-	$(CC) $(CFLAGS) -o $@ -c $< -I $(INC_DIR) -MMD
+	$(CC) $(CFLAGS) -o $@ -c $< -I $(INC_DIR) -MMD 
 
 clean: 
 	@rm -rf $(OUT_DIR)
@@ -34,7 +34,8 @@ info:
 doc:
 	@echo "Generando documentacion"
 	@mkdir -p $(DOC_DIR)
-	@doxygen $(DOXYFILE)
+	@doxygen Doxyfile
 
 run: all
 	@$(BIN_DIR)/app.out
+

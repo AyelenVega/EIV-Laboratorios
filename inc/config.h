@@ -17,15 +17,15 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 SPDX-License-Identifier: MIT
 *********************************************************************************************************************/
 
-#ifndef ALUMNO_H_
-#define ALUMNO_H_
+#ifndef CONFIG_H_
+#define CONFIG_H_
 
-/** @file alumno.h
- ** @brief Declaraciones del módulo para gestión de alumnos
+/** @file config.h
+ ** @brief Archivo de configuracion
  **/
 
 /* === Headers files inclusions ==================================================================================== */
-#include <stdint.h>
+
 /* === Header for C++ compatibility ================================================================================ */
 
 #ifdef __cplusplus
@@ -34,35 +34,14 @@ extern "C" {
 
 /* === Public macros definitions =================================================================================== */
 
-/* === Public data type declarations =============================================================================== */
+#define USO_MEMORIA_DINAMICA
+#define ALUMNOS_MAX_INSTANCIAS 2 //!< Cantidad máxima de alumnos
 
-//! Estructura que representa a un alumno
-typedef struct alumno_s *alumno_t;
+/* === Public data type declarations =============================================================================== */
 
 /* === Public variable declarations ================================================================================ */
 
 /* === Public function declarations ================================================================================ */
-
-/**
- * @brief Función para crear un nuevo alumno
- *
- * @param nombre    Nombre del alumno
- * @param apellido  Apellido del alumno
- * @param dni       Documento del alumno
- * @return alumno_t Referencia al nuevo alumno creado
- */
-
-alumno_t AlumnoCrear(char nombre[], char apellido[], uint32_t dni);
-
-/**
- * @brief Función para serializar los datos de un alumno
- *
- * @param alumno Referencia al alumno a serializar
- * @param buffer Cadena de caracteres donde se almacenaran los datos serializados
- * @param size   Espacio disponible en la cadena de caracteres
- * @return int   Cantidad de caracteres escritos en la cadena de resultado o -1 si hubo error
- */
-int AlumnoSerializar(alumno_t alumno, char buffer[], uint32_t size);
 
 /* === End of conditional blocks =================================================================================== */
 
@@ -70,4 +49,4 @@ int AlumnoSerializar(alumno_t alumno, char buffer[], uint32_t size);
 }
 #endif
 
-#endif /* ALUMNO_H_ */
+#endif /* CONFIG_H_ */
